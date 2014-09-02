@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/docopt/docopt-go"
 	_ "github.com/mattn/go-sqlite3"
 )
-
-const SqliteTimeLayout = "2006-01-02 15:04:05"
 
 type MoldyFridge struct {
 	DbName string
@@ -21,15 +20,36 @@ type MoldyFridge struct {
 type Food struct {
 	Name   string
 	Amount int
-	Added  *time.Time
+	Added  int64
 }
 
 func (f *Food) toString() string {
-	return fmt.Sprintf("%s: %d, added on %s", f.Name, f.Amount, f.FormatDateTime())
+	return fmt.Sprintf("%s: %d, age - %s", f.Name, f.Amount, f.StringAge())
 }
 
-func (f *Food) FormatDateTime() string {
-	return f.Added.Format(SqliteTimeLayout)
+func (f *Food) Age() int64 {
+	return time.Now().Unix() - f.Added
+}
+
+func (f *Food) StringAge() string {
+	duration := f.Age()
+	age := ""
+	days := int64(duration / 86400)
+	hours := int64((duration - days*86400) / 3600)
+	minutes := int64((duration - days*86400 - hours*3600) / 60)
+	if days > 0 {
+		age += fmt.Sprintf("%dd ", days)
+	}
+	if hours > 0 {
+		age += fmt.Sprintf("%dh ", hours)
+	}
+	if minutes > 0 {
+		age += fmt.Sprintf("%dm ", minutes)
+	}
+	if age == "" {
+		age = "just now"
+	}
+	return age
 }
 
 func NewFridge(dbname string) *MoldyFridge {
@@ -42,7 +62,7 @@ func NewFridge(dbname string) *MoldyFridge {
 }
 
 func (f *MoldyFridge) init() {
-	query := "create table food (id integer not null primary key, name text, amount integer, added datetime);"
+	query := "create table food (id integer not null primary key, name text, amount integer, added integer);"
 	_, err := f.Db.Exec(query)
 	if err != nil {
 		log.Print("can't initialize table")
@@ -61,9 +81,9 @@ func (f *MoldyFridge) destroy() {
 }
 
 func (f *MoldyFridge) AddFood(name string, amount int) {
-	now := time.Now().Format("2006-01-02 15:04:05")
+	now := time.Now().Unix()
 	fmt.Println(now)
-	query := fmt.Sprintf("insert into food (name, amount, added) values ('%s', %d, '%s');", name, amount, now)
+	query := fmt.Sprintf("insert into food (name, amount, added) values ('%s', %d, %d);", name, amount, now)
 	_, err := f.Db.Exec(query)
 	if err != nil {
 		log.Printf("Can't add %s\n", name)
@@ -71,8 +91,18 @@ func (f *MoldyFridge) AddFood(name string, amount int) {
 	}
 }
 
-func (f *MoldyFridge) RemoveFood(name string) {
-	query := "delete from food where name = '" + name + "';"
+func (f *MoldyFridge) RemoveFood(args ...interface{}) {
+	name := args[0].(string)
+	amount := 0
+	var query string
+	if len(args) == 2 {
+		amount = args[1].(int)
+	}
+	if amount == 0 {
+		query = "delete from food where name = '" + name + "';"
+	} else {
+		query = fmt.Sprintf("update food set amount = amount - %d where name = '%s';", amount, name)
+	}
 	_, err := f.Db.Exec(query)
 	if err != nil {
 		log.Printf("Can't remove %s\n", name)
@@ -93,7 +123,7 @@ func (f *MoldyFridge) PromptFood() {
 
 func (f *MoldyFridge) GetFood() []Food {
 	var result []Food
-	sql := "select name, amount, added from food;"
+	sql := "select name, amount, added from food order by added;"
 	rows, err := f.Db.Query(sql)
 	if err != nil {
 		log.Fatal(err)
@@ -101,16 +131,16 @@ func (f *MoldyFridge) GetFood() []Food {
 	for rows.Next() {
 		var name string
 		var amount int
-		var added time.Time
+		var added int64
 		rows.Scan(&name, &amount, &added)
-		result = append(result, Food{name, amount, &added})
+		result = append(result, Food{name, amount, added})
 	}
 	return result
 }
 
 func (f *MoldyFridge) SearchFood(query string) []Food {
 	var result []Food
-	sql := "select name, amount, added from food where lower(name) like '%" + query + "%';"
+	sql := "select name, amount, added from food where lower(name) like '%" + query + "%' order by added;"
 	rows, err := f.Db.Query(sql)
 	if err != nil {
 		log.Fatal(err)
@@ -118,10 +148,9 @@ func (f *MoldyFridge) SearchFood(query string) []Food {
 	for rows.Next() {
 		var name string
 		var amount int
-		var added_str string
-		rows.Scan(&name, &amount, &added_str)
-		added, _ := time.Parse(SqliteTimeLayout, added_str)
-		result = append(result, Food{name, amount, &added})
+		var added int64
+		rows.Scan(&name, &amount, &added)
+		result = append(result, Food{name, amount, added})
 	}
 	return result
 }
@@ -131,6 +160,7 @@ func main() {
 
 Usage:
   moldyfridge (add | rm) <food>...
+  moldyfridge (add | rm) <food> [--amount <amount>]
   moldyfridge ls
   moldyfridge search <food>
   moldyfridge reset
@@ -143,12 +173,18 @@ Options:
 	if fridge.checkDb() {
 		fridge.init()
 	}
+	var amount int
+	if arguments["<amount>"] != nil {
+		amount, _ = strconv.Atoi(arguments["<amount>"].(string))
+	} else {
+		amount = 1
+	}
 	if arguments["add"] == true {
 		for _, food := range arguments["<food>"].([]string) {
-			fridge.AddFood(food, 1)
+			fridge.AddFood(food, amount)
 		}
 	} else if arguments["rm"] == true {
-		fridge.RemoveFood(arguments["<food>"].([]string)[0])
+		fridge.RemoveFood(arguments["<food>"].([]string)[0], amount)
 	} else if arguments["ls"] == true {
 		for _, food := range fridge.GetFood() {
 			fmt.Println(food.toString())
