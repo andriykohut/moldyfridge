@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/user"
+	"path"
 	"strconv"
 
 	"github.com/andriykohut/moldyfridge/fridgedb"
@@ -22,10 +25,16 @@ Options:
   -h --help     Show this screen.
   --version     Show version.`
 	arguments, _ := docopt.Parse(usage, nil, true, "moldyfridge 0.1", false)
-	fridge := fridgedb.NewFridge("test.db")
+	usr, _ := user.Current()
+	home := usr.HomeDir
+	confdir := path.Join(home, ".moldyfridge")
+	dbpath := path.Join(confdir, "fridge.db")
+	fridge := fridgedb.NewFridge(dbpath)
 	if fridge.CheckDb() {
+		os.Mkdir(confdir, 0755)
 		fridge.Init()
 	}
+
 	var amount int
 	if arguments["<amount>"] != nil {
 		amount, _ = strconv.Atoi(arguments["<amount>"].(string))
