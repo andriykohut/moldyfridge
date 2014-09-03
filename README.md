@@ -40,6 +40,7 @@ Beer: 3, age - just now
 **Searching food**
 ```
 moldyfridge search bee
+Beer: 3, age - 12m
 ```
 
 ## TODO
