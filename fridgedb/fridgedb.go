@@ -47,7 +47,6 @@ func (f *MoldyFridge) Destroy() {
 
 func (f *MoldyFridge) AddFood(name string, amount int) {
 	now := time.Now().Unix()
-	fmt.Println(now)
 	query := fmt.Sprintf("insert into food (name, amount, added) values ('%s', %d, %d);", name, amount, now)
 	_, err := f.Db.Exec(query)
 	if err != nil {
