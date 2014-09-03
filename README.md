@@ -2,6 +2,7 @@ moldyfridge
 ===========
 
 *Eat your food before it gets moldy*
+
 simple fridge tracker in golang
 
 ```bash
