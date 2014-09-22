@@ -33,14 +33,26 @@ moldyfridge add Beer --amount 3
 **Listing food**
 ```
 moldyfridge ls
-Cucumbers: 1, age - 2m
-Tomatoes: 1, age - 2m
-Beer: 3, age - just now
+
++-----------+----------+--------+
+| name      | age      | amount |
++-----------+----------+--------+
+| Cucumbers | 1m       | 1      |
++-----------+----------+--------+
+| Tomatoes  | 1m       | 1      |
++-----------+----------+--------+
+| Beer      | just now | 3      |
++-----------+----------+--------+
 ```
 **Searching food**
 ```
-moldyfridge search bee
-Beer: 3, age - 12m
+moldyfridge search matoe
+
++----------+-----+--------+
+| name     | age | amount |
++----------+-----+--------+
+| Tomatoes | 1m  | 1      |
++----------+-----+--------+
 ```
 
 ## TODO
