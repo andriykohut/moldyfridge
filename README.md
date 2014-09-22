@@ -56,6 +56,6 @@ moldyfridge search matoe
 ```
 
 ## TODO
-- Display output in some nice tables
+- ~~Display output in some nice tables~~
 - Remove food when amount <= 0
 - Collect stats
