@@ -61,8 +61,10 @@ Options:
 				"amount": strconv.Itoa(food.Amount),
 			})
 		}
-		table := gotable.NewTable(food_rows, true, []string{"name", "age", "amount"})
-		fmt.Println(table.GetTable())
+		if len(food_rows) != 0 {
+			table := gotable.NewTable(food_rows, true, []string{"name", "age", "amount"})
+			fmt.Println(table.GetTable())
+		}
 	} else if arguments["search"] == true {
 		var food_rows []map[string]string
 		for _, food := range fridge.SearchFood(arguments["<food>"].([]string)[0]) {
@@ -71,8 +73,10 @@ Options:
 				"amount": strconv.Itoa(food.Amount),
 			})
 		}
-		table := gotable.NewTable(food_rows, true, []string{"name", "age", "amount"})
-		fmt.Println(table.GetTable())
+		if len(food_rows) != 0 {
+			table := gotable.NewTable(food_rows, true, []string{"name", "age", "amount"})
+			fmt.Println(table.GetTable())
+		}
 	} else if arguments["reset"] == true {
 		fmt.Print("You really wan't to reset moldyfridge? (y/n): ")
 		var choice string
