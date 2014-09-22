@@ -7,6 +7,7 @@ import (
 	"path"
 	"strconv"
 
+	"github.com/andriykohut/gotable"
 	"github.com/andriykohut/moldyfridge/fridgedb"
 	"github.com/docopt/docopt-go"
 )
@@ -53,13 +54,25 @@ Options:
 			fridge.RemoveFood(arguments["<food>"].([]string)[0])
 		}
 	} else if arguments["ls"] == true {
+		var food_rows []map[string]string
 		for _, food := range fridge.GetFood() {
-			fmt.Println(food.ToString())
+			food_rows = append(food_rows, map[string]string{
+				"name": food.Name, "age": food.StringAge(),
+				"amount": strconv.Itoa(food.Amount),
+			})
 		}
+		table := gotable.NewTable(food_rows, true, []string{"name", "age", "amount"})
+		fmt.Println(table.GetTable())
 	} else if arguments["search"] == true {
+		var food_rows []map[string]string
 		for _, food := range fridge.SearchFood(arguments["<food>"].([]string)[0]) {
-			fmt.Println(food.ToString())
+			food_rows = append(food_rows, map[string]string{
+				"name": food.Name, "age": food.StringAge(),
+				"amount": strconv.Itoa(food.Amount),
+			})
 		}
+		table := gotable.NewTable(food_rows, true, []string{"name", "age", "amount"})
+		fmt.Println(table.GetTable())
 	} else if arguments["reset"] == true {
 		fmt.Print("You really wan't to reset moldyfridge? (y/n): ")
 		var choice string
