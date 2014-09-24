@@ -31,11 +31,11 @@ moldyfridge add Cucumbers Tomatoes
 moldyfridge add Beer --amount 3
 ```
 **Listing food**
-```
+<pre>
 moldyfridge ls
 
 +-----------+----------+--------+
-| name      | age      | amount |
+| <b>name</b>      | <b>age</b>      | <b>amount</b> |
 +-----------+----------+--------+
 | Cucumbers | 1m       | 1      |
 +-----------+----------+--------+
@@ -43,17 +43,17 @@ moldyfridge ls
 +-----------+----------+--------+
 | Beer      | just now | 3      |
 +-----------+----------+--------+
-```
+</pre>
 **Searching food**
-```
+<pre>
 moldyfridge search matoe
 
 +----------+-----+--------+
-| name     | age | amount |
+| <b>name</b>     | <b>age</b> | <b>amount</b> |
 +----------+-----+--------+
 | Tomatoes | 1m  | 1      |
 +----------+-----+--------+
-```
+</pre>
 
 ## TODO
 - ~~Display output in some nice tables~~
